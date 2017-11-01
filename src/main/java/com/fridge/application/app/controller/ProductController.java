@@ -30,10 +30,12 @@ public class ProductController {
         g.setId("some_id");
                 
         return g;
+        
+        
     }
 
     // Get All Products
-    @GetMapping("/products")
+    @GetMapping(value = "/products", produces = "application/json")
     public List<Product> getAllProducts() {
         return productRepository.findAll();
 }
