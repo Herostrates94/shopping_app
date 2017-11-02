@@ -20,19 +20,7 @@ public class ProductController {
     @Autowired
     ProductRepository productRepository;
     
-    
-    // Get All Products
-    @GetMapping(value = "/login/{login}/{password}", produces = "application/json")
-    public Greeting getLogin(@PathVariable(value = "login") String login, @PathVariable(value = "password") String password) {
-        
-        Greeting g = new Greeting();
-        g.setContent("some_content");
-        g.setId("some_id");
-                
-        return g;
-        
-        
-    }
+
 
     // Get All Products
     @GetMapping(value = "/products", produces = "application/json")
