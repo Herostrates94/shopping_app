@@ -1,5 +1,6 @@
 package com.fridge.application.app.entitites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
@@ -41,6 +42,14 @@ public class Product implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt;
+    
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "username")
+    private User user;
+    
+    private int amount = 0;
+    
 
     public Product(){
         
@@ -95,6 +104,22 @@ public class Product implements Serializable {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 
 }
