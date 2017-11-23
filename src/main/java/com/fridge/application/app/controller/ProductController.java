@@ -2,10 +2,8 @@ package com.fridge.application.app.controller;
 
 
 import com.fridge.application.app.entitites.Product;
-import com.fridge.application.app.entitites.User;
 import com.fridge.application.app.repository.ProductRepository;
 import com.fridge.application.app.repository.UserRepository;
-import java.util.Collections;
 import java.util.Iterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
-import javax.websocket.server.PathParam;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+
 
 @RestController
 @RequestMapping("/api")
@@ -67,6 +62,7 @@ public class ProductController {
         return ResponseEntity.ok().body(note);
     }
 
+    //TODO:  is id really needed here? 
     // Update a Product
     @PutMapping("/products/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable(value = "id") Long noteId, 
