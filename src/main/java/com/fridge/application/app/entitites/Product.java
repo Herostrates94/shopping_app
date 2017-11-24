@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 
@@ -47,6 +48,10 @@ public class Product implements Serializable {
     @ManyToOne
     @JoinColumn(name = "username")
     private User user;
+    
+    @JsonIgnore
+    @OneToMany(mappedBy="product")
+    private List<Amount> amounts;
     
     private int amount = 0;
     
