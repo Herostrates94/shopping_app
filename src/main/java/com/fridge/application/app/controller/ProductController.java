@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @RestController
@@ -23,11 +25,15 @@ public class ProductController {
     @Autowired
     UserRepository userRepository;
     
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    
 
 
     // Get All Products
     @GetMapping(value = "/products", produces = "application/json")
     public List<Product> getAllProducts() {
+        
+        logger.info("GetAllProducts REST service was executed");
         
         List<Product> products = productRepository.findAll(); 
         Iterator<Product> iter = products.iterator();
