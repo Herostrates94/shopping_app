@@ -19,14 +19,14 @@ import javax.persistence.Table;
  * @author user
  */
 @Entity
-@Table(name = "amounts")
-public class Amount {
+@Table(name = "device_amounts")
+public class DeviceAmount {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     
-    public Amount(){
+    public DeviceAmount(){
         
     }
     

@@ -51,7 +51,7 @@ public class Product implements Serializable {
     
     @JsonIgnore
     @OneToMany(mappedBy="product")
-    private List<Amount> amounts;
+    private List<DeviceAmount> amounts;
     
     private int amount = 0;
     

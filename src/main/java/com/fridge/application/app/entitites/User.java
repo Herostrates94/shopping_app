@@ -96,7 +96,7 @@ public class User implements Serializable {
             return false;
         }
         User other = (User) object;
-        if ((this.username == null && other.username != null) || (this.username != null && !this.username.equals(other.username))) {
+        if ( !this.username.equals(other.username)) {
             return false;
         }
         return true;
