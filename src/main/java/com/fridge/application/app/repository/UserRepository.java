@@ -12,18 +12,12 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, String> {
     
     
-    default User getCurrentUser(){
-                
+    default User getCurrentUser(){                
         
-        String username;
-        
+        String username;        
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        username = ((UserDetails)principal).getUsername();
- 
-        
-        User user = findOne(username);
-        
+        username = ((UserDetails)principal).getUsername();        
+        User user = findOne(username);       
       
         return user;
     }

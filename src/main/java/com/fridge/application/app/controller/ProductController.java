@@ -1,9 +1,11 @@
 package com.fridge.application.app.controller;
 
 
+import com.fridge.application.app.daos.ProductsListDAO;
 import com.fridge.application.app.entitites.Product;
 import com.fridge.application.app.repository.ProductRepository;
 import com.fridge.application.app.repository.UserRepository;
+import com.fridge.application.app.service.ProductService;
 import java.util.Iterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,87 +21,26 @@ import org.slf4j.LoggerFactory;
 @RequestMapping("/api")
 public class ProductController {
 
-    @Autowired
-    ProductRepository productRepository;
+
     
     @Autowired
-    UserRepository userRepository;
+    ProductService productService;
     
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
 
 
     // Get All Products
-    @GetMapping(value = "/products", produces = "application/json")
-    public List<Product> getAllProducts() {
+    @PostMapping(value = "/products", produces = "application/json")
+    @ResponseBody
+    public ProductsListDAO getAllProducts(@Valid @RequestBody ProductsListDAO productsListDAO, @RequestHeader("GUID") String GUID) {
         
         logger.info("GetAllProducts REST service was executed");
         
-        List<Product> products = productRepository.findAll(); 
-        Iterator<Product> iter = products.iterator();
-
-        while (iter.hasNext()) {
-            Product product = iter.next();
-
-            if(product.getUser() == null || 
-                    ! product.getUser().getUsername().equals(userRepository.getCurrentUser().getUsername()))
-                iter.remove();
-        }
+        // synchronizacja      
         
-        return productRepository.findAll();
-}
-
-    // Create a new Product
-    @PostMapping("/products")
-    public Product createProduct(@Valid @RequestBody Product product) {
-        product.setUser(userRepository.getCurrentUser());
-        return productRepository.save(product);
-    }
-    
-    
-    // Get a Single Product
-    // not needed in this project - 06.11.17 Birgiel 
-    @GetMapping("/products/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable(value = "id") Long noteId) {
-        Product note = productRepository.findOne(noteId);
-        if(note == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok().body(note);
-    }
-
-    //TODO:  is id really needed here? 
-    // Update a Product
-    @PutMapping("/products/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable(value = "id") Long noteId, 
-                                           @Valid @RequestBody Product productDetails) {
-        Product product = productRepository.findOne(noteId);
-        if(product == null) {
-            return ResponseEntity.notFound().build();
-        }
+        ProductsListDAO newProductsListDAO = new ProductsListDAO(productService.synchronize(GUID, productsListDAO.getProducts()));
         
-        product.setNameOfStore(productDetails.getNameOfStore());
-        product.setProductName(productDetails.getProductName());
-        product.setPrice(productDetails.getPrice());
-        product.setAmount(productDetails.getAmount());
-
-        Product updatedProduct = productRepository.save(product);
-        return ResponseEntity.ok(updatedProduct);
+        return newProductsListDAO;
     }
-
-    // Delete a Product
-    @DeleteMapping("/products/{id}")
-    public ResponseEntity<Product> deleteProduct(@PathVariable(value = "id") Long noteId) {
-        Product note = productRepository.findOne(noteId);
-        if(note == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        productRepository.delete(note);
-        return ResponseEntity.ok().build();
-    }	
-    
-
-    
-    
 }
