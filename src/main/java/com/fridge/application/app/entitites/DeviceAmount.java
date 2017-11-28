@@ -30,6 +30,12 @@ public class DeviceAmount {
         
     }
     
+    public DeviceAmount(int deviceAmount, String deviceGUID, Product product){
+        this.deviceAmount = deviceAmount;
+        this.deviceGUID = deviceGUID;
+        this.product = product;
+    }
+    
     private int deviceAmount;
     private String deviceGUID;
     

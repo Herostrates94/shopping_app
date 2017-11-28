@@ -11,5 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface DeviceAmountRepository extends JpaRepository<DeviceAmount, Long> {
     
     public DeviceAmount findFirstByProductAndDeviceGUID(Product product, String GUID);
+    
+    public List<DeviceAmount> findByProduct(Product product);
 
 }

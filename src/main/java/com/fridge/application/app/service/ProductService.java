@@ -5,7 +5,6 @@
  */
 package com.fridge.application.app.service;
 
-import com.fridge.application.app.daos.ProductsListDAO;
 import com.fridge.application.app.entitites.DeviceAmount;
 import com.fridge.application.app.entitites.Product;
 import com.fridge.application.app.repository.DeviceAmountRepository;
@@ -39,37 +38,53 @@ public class ProductService {
     public List<Product> synchronize(String GUID, List<Product> deviceProducts){
         this.GUID = GUID;
         this.deviceProducts = deviceProducts;
-        getUserProducts();
+        getUserProductsFromDatabase();
+        addNewProductsToDatabase();
+        deleteOldProductsFromDatabase();
         updateDeviceAmountsOnServer();
-        
-        
-        
-        
-        
-        
-        
-
-        
-        
+        getUserProductsFromDatabase();
+        calculateTotalAmountsForProducts();
+                           
         return serverProducts;
+    }
+    
+    void calculateTotalAmountsForProducts(){
+        
+        for(Product serverProduct : serverProducts){            
+            
+            List<DeviceAmount> deviceAmountsForProduct = deviceAmountRepository.findByProduct(serverProduct);
+            
+            int totalAmount = 0;
+            
+            for(DeviceAmount deviceAmount : deviceAmountsForProduct){
+                totalAmount += deviceAmount.getDeviceAmount();
+            }
+            
+            serverProduct.setAmount(totalAmount);
+            productRepository.save(serverProduct);            
+            
+        }         
+        
     }
     
     void updateDeviceAmountsOnServer(){
         
-        for(Product deviceProduct : deviceProducts){
-            
-            DeviceAmount deviceAmount = updateProductAmountForThisDevice(deviceProduct);
-        
-        
-        }
+        for(Product deviceProduct : deviceProducts){            
+            updateProductAmountForThisDevice(deviceProduct); 
+        }   
         
     }
     
     void updateProductAmountForThisDevice(Product product){
         
-        DeviceAmount deviceAmounts = deviceAmountRepository.findFirstByProductAndDeviceGUID(product, GUID);
+        DeviceAmount deviceAmountOnServer = deviceAmountRepository.findFirstByProductAndDeviceGUID(product, GUID);
         
-        
+        if(deviceAmountOnServer != null){
+            deviceAmountOnServer.setDeviceAmount(product.getAmount());
+            deviceAmountRepository.save(deviceAmountOnServer);
+        }else{
+            deviceAmountRepository.save(new DeviceAmount(product.getAmount(), GUID, product));
+        }
         
         
     }
@@ -77,7 +92,7 @@ public class ProductService {
     
     
     
-    void getUserProducts(){
+    void getUserProductsFromDatabase(){
         
         serverProducts = productRepository.findAll(); 
         Iterator<Product> iter = serverProducts.iterator();
@@ -90,66 +105,45 @@ public class ProductService {
                 iter.remove();
         }     
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    void updateDeviceAmounts(String GUID){
+
+    private void addNewProductsToDatabase() {
         
-        
-        
-        
-        /*
-        for(Product serverProduct : serverProducts){
+        for(Product deviceProduct : deviceProducts){
             
-            boolean productFreshlyAddedOnDevice = true;
+            boolean isProductNew = true;
             
-            for(Product deviceProduct : deviceProducts){                
-                if(serverProduct.getProductName().equals(deviceProduct.getProductName())){                    
-                    productFreshlyAddedOnDevice = false;                    
-                    serverProduct.setAmount(deviceProduct.getAmount());                    
-                }               
-            }   
+            for(Product serverProduct : serverProducts){
             
-            if(productFreshlyAddedOnDevice){
-                
-                
-                
-                
-                
-                
+                if(deviceProduct.getProductName().equals(serverProduct.getProductName())){
+                    isProductNew = false;
+                    break;
+                } 
             }
             
-            
-        }*/
-    }
-
-
-    private void getUserProductAmounts() {
-        
-        
-        for(Product product : serverProducts){
-            
-            
-            
-            
-            
-            
-            
+            if(isProductNew){
+                productRepository.save(deviceProducts);
+            }  
         }
-        
     }
-    
-    
+
+    private void deleteOldProductsFromDatabase() {
+        
+       for(Product serverProduct : serverProducts){
+            
+            boolean wasProductDeleted = true;
+            
+            for(Product deviceProduct : deviceProducts){
+            
+                if(deviceProduct.getProductName().equals(serverProduct.getProductName())){
+                    wasProductDeleted = false;
+                    break;
+                } 
+            }
+            
+            if(wasProductDeleted){
+                productRepository.delete(deviceProducts);
+            }  
+        } 
+    }
+        
 }

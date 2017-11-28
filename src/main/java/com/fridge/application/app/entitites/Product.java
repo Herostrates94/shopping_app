@@ -50,7 +50,7 @@ public class Product implements Serializable {
     private User user;
     
     @JsonIgnore
-    @OneToMany(mappedBy="product")
+    @OneToMany(mappedBy="product", cascade = CascadeType.ALL)
     private List<DeviceAmount> amounts;
     
     private int amount = 0;
