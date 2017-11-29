@@ -121,7 +121,8 @@ public class ProductService {
             }
             
             if(isProductNew){
-                productRepository.save(deviceProducts);
+                deviceProduct.setUser(userRepository.getCurrentUser());
+                productRepository.save(deviceProduct);
             }  
         }
     }
