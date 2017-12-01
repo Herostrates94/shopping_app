@@ -35,11 +35,12 @@ public class ProductController {
     @ResponseBody
     public ProductsListDAO getAllProducts(@Valid @RequestBody ProductsListDAO productsListDAO, @RequestHeader("GUID") String GUID) {
         
-        logger.info("GetAllProducts REST service was executed");
+        
         
         // synchronizacja      
         
         ProductsListDAO newProductsListDAO = new ProductsListDAO(productService.synchronize(GUID, productsListDAO.getProducts()));
+        logger.info("GetAllProducts REST service was executed");
         
         return newProductsListDAO;
     }

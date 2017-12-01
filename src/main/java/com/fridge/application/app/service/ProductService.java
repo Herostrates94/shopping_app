@@ -7,6 +7,7 @@ package com.fridge.application.app.service;
 
 import com.fridge.application.app.entitites.DeviceAmount;
 import com.fridge.application.app.entitites.Product;
+import com.fridge.application.app.entitites.User;
 import com.fridge.application.app.repository.DeviceAmountRepository;
 import com.fridge.application.app.repository.ProductRepository;
 import com.fridge.application.app.repository.UserRepository;
@@ -24,6 +25,7 @@ public class ProductService {
     
     List<Product> serverProducts, deviceProducts;
     String GUID;
+    User currentUser;
     
     
     @Autowired
@@ -37,12 +39,13 @@ public class ProductService {
     
     public List<Product> synchronize(String GUID, List<Product> deviceProducts){
         this.GUID = GUID;
+        this.currentUser = userRepository.getCurrentUser();
         this.deviceProducts = deviceProducts;
-        getUserProductsFromDatabase();
-        addNewProductsToDatabase();
-        deleteOldProductsFromDatabase();
-        updateDeviceAmountsOnServer();
-        getUserProductsFromDatabase();
+        
+        deleteOldProductsFromServerDatabase();
+        addNewProductsToServerDatabase();        
+        addOrUpdateDeviceAmountsOnServer();
+        getUserProductsFromServerDatabase();
         calculateTotalAmountsForProducts();
                            
         return serverProducts;
@@ -67,7 +70,7 @@ public class ProductService {
         
     }
     
-    void updateDeviceAmountsOnServer(){
+    void addOrUpdateDeviceAmountsOnServer(){
         
         for(Product deviceProduct : deviceProducts){            
             updateProductAmountForThisDevice(deviceProduct); 
@@ -75,15 +78,17 @@ public class ProductService {
         
     }
     
-    void updateProductAmountForThisDevice(Product product){
+    void updateProductAmountForThisDevice(Product deviceProduct){
         
-        DeviceAmount deviceAmountOnServer = deviceAmountRepository.findFirstByProductAndDeviceGUID(product, GUID);
+        Product correspondingServerProduct = productRepository.findFirstByProductNameAndUser(deviceProduct.getProductName(), currentUser);
+        
+        DeviceAmount deviceAmountOnServer = deviceAmountRepository.findFirstByProductAndDeviceGUID(correspondingServerProduct, GUID);
         
         if(deviceAmountOnServer != null){
-            deviceAmountOnServer.setDeviceAmount(product.getAmount());
+            deviceAmountOnServer.setDeviceAmount(deviceProduct.getAmount());
             deviceAmountRepository.save(deviceAmountOnServer);
         }else{
-            deviceAmountRepository.save(new DeviceAmount(product.getAmount(), GUID, product));
+            deviceAmountRepository.save(new DeviceAmount(deviceProduct.getAmount(), GUID, correspondingServerProduct));
         }
         
         
@@ -92,58 +97,40 @@ public class ProductService {
     
     
     
-    void getUserProductsFromDatabase(){
+    void getUserProductsFromServerDatabase(){
         
-        serverProducts = productRepository.findAll(); 
-        Iterator<Product> iter = serverProducts.iterator();
-
-        while (iter.hasNext()) {
-            Product product = iter.next();
-
-            if(product.getUser() == null || 
-                    ! product.getUser().getUsername().equals(userRepository.getCurrentUser().getUsername()))
-                iter.remove();
-        }     
+        serverProducts = productRepository.findByUser(currentUser);
+        
     }
 
-    private void addNewProductsToDatabase() {
+    private void addNewProductsToServerDatabase() {
         
-        for(Product deviceProduct : deviceProducts){
+        for(Product deviceProduct : deviceProducts){            
             
-            boolean isProductNew = true;
-            
-            for(Product serverProduct : serverProducts){
-            
-                if(deviceProduct.getProductName().equals(serverProduct.getProductName())){
-                    isProductNew = false;
-                    break;
-                } 
-            }
-            
-            if(isProductNew){
-                deviceProduct.setUser(userRepository.getCurrentUser());
-                productRepository.save(deviceProduct);
-            }  
+                Product product = productRepository.findFirstByProductNameAndUser(deviceProduct.getProductName(), currentUser);
+
+                if(deviceProduct.getDeleted().equals("false" ) && product == null){
+                    deviceProduct.setUser(currentUser);
+                    productRepository.save(deviceProduct); 
+                }
         }
     }
 
-    private void deleteOldProductsFromDatabase() {
+    private void deleteOldProductsFromServerDatabase() {
         
-       for(Product serverProduct : serverProducts){
+       for(Product deviceProduct : deviceProducts){
+           
+           if(deviceProduct.getDeleted().equals("true")){
             
-            boolean wasProductDeleted = true;
-            
-            for(Product deviceProduct : deviceProducts){
-            
-                if(deviceProduct.getProductName().equals(serverProduct.getProductName())){
-                    wasProductDeleted = false;
-                    break;
-                } 
-            }
-            
-            if(wasProductDeleted){
-                productRepository.delete(deviceProducts);
-            }  
+                Product product = productRepository.findFirstByProductNameAndUser(deviceProduct.getProductName(), currentUser);
+                List<DeviceAmount> deviceAmounts = deviceAmountRepository.findByProduct(deviceProduct);
+                if(product != null){
+                    deviceAmountRepository.delete(deviceAmounts);
+                    productRepository.delete(product);   
+                }
+                       
+           }
+           
         } 
     }
         

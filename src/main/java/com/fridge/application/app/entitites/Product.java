@@ -55,6 +55,9 @@ public class Product implements Serializable {
     
     private int amount = 0;
     
+    
+    private String deleted = "false";
+    
 
     public Product(){
         
@@ -125,6 +128,14 @@ public class Product implements Serializable {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public String getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(String deleted) {
+        this.deleted = deleted;
     }
 
 }
