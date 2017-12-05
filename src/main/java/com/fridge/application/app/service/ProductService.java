@@ -116,22 +116,29 @@ public class ProductService {
         }
     }
 
-    private void deleteOldProductsFromServerDatabase() {
-        
-       for(Product deviceProduct : deviceProducts){
-           
-           if(deviceProduct.getDeleted().equals("true")){
+    private void deleteOldProductsFromServerDatabase() {        
+      
+        Iterator<Product> productIterator = deviceProducts.iterator();
+        while (productIterator.hasNext()) {
             
-                Product product = productRepository.findFirstByProductNameAndUser(deviceProduct.getProductName(), currentUser);
-                List<DeviceAmount> deviceAmounts = deviceAmountRepository.findByProduct(deviceProduct);
-                if(product != null){
-                    deviceAmountRepository.delete(deviceAmounts);
-                    productRepository.delete(product);   
+                Product deviceProduct = productIterator.next();
+                
+                if(deviceProduct.getDeleted().equals("true")){
+                
+                    Product product = productRepository.findFirstByProductNameAndUser(deviceProduct.getProductName(), currentUser);
+                    
+                    if(product != null){
+                        List<DeviceAmount> deviceAmounts = deviceAmountRepository.findByProduct(deviceProduct);
+                        deviceAmountRepository.delete(deviceAmounts);
+                        productRepository.delete(product);   
+                    }           
+
+                    productIterator.remove();
+
+                
                 }
-                       
-           }
-           
-        } 
+        }
+       
     }
         
 }

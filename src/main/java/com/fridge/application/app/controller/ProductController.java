@@ -40,7 +40,7 @@ public class ProductController {
         // synchronizacja      
         
         ProductsListDAO newProductsListDAO = new ProductsListDAO(productService.synchronize(GUID, productsListDAO.getProducts()));
-        logger.info("GetAllProducts REST service was executed");
+        logger.info("GetAllProducts/ Products returned: " + newProductsListDAO.getProducts().size());
         
         return newProductsListDAO;
     }
